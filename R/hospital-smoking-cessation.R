@@ -49,9 +49,12 @@ plt <- ggplot(data_agg, aes(x = Setting_Type, y = Count, fill = Outcome)) +
   theme(
     legend.position = "top"
   ) +
-  scale_fill_brewer(palette="Set2")
+  scale_fill_brewer(palette="Set2")+
+  theme(
+    axis.text.x = element_text(size = 7)  # adjust size here
+  )
 
 plt
 
 ggsave("output/hospital-outcomes.png", plt, 
-       width = 7, height = 4)
+       width = 8, height = 3.5)
