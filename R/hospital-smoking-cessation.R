@@ -14,12 +14,16 @@ data <- read_excel("data/hospital-outcomes.xlsx") %>%
     names_to = "Outcome",
     values_to = "Count"
   ) %>%
+  # Process data text
   mutate(
     NHS_Trust = str_to_title(ODS_Name),
     NHS_Trust = str_replace(NHS_Trust, "Nhs", "NHS"),
     NHS_Trust = str_wrap(NHS_Trust, 30),
     Outcome = str_remove(Outcome, "Outcome - "),
-    Outcome = str_replace(Outcome, "NULL", "Unknown")
+    Outcome = str_replace(Outcome, "NULL", "Unknown"),
+    Referral_Type = str_remove(Referral_Type, " Commissioned Stop Smoking Service"),
+    Referral_Type = str_remove(Referral_Type, " Community Pharmacy"),
+    Setting_Type = paste0(Setting_Type, "\n(", Referral_Type, ")")
   ) %>%
   select(-ODS_Name)
 
@@ -49,13 +53,5 @@ plt <- ggplot(data_agg, aes(x = Setting_Type, y = Count, fill = Outcome)) +
 
 plt
 
-ggsave("output/hospital-outcomes-free-y.png", plt, 
-       width = 7, height = 4)
-
-plt2 <- plt +scale_y_continuous(
-  limits = c(0, 4000),
-  #expand = c(0, 0)
-) 
-
-ggsave("output/hospital-outcomes.png", plt2,
+ggsave("output/hospital-outcomes.png", plt, 
        width = 7, height = 4)
