@@ -1,0 +1,203 @@
+---
+title: "Smoking Needs Assessment Analysis"
+author: "David Ellis"
+execute:
+  echo: false
+  warning: false
+format: 
+  html:
+    embed-resources: true
+---
+
+
+```{r setup}
+library(readxl)
+library(dplyr)
+library(stringr)
+
+# Get path for GP registration data
+source("config.R")
+
+# Load GP registration data (all ages)
+GP_reg_data <- read_excel(
+  file.path(
+    GP_reg_data_path,
+    "BSol-GP-all-demographics-June2025.xlsx"
+  )
+) %>%
+  filter(
+    Locality != "Solihull"
+  ) %>%
+  rename(
+    Ethnicity = Ethnic_Description_National
+  ) 
+
+GP_eths <- GP_reg_data %>%
+  group_by(
+    GP_Code, GP_Name, PCN, Locality, Ethnicity
+  ) %>%
+  summarise(
+    N = sum(BSOL_Registrants, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    N = round(N / 5) * 5
+  )
+
+GP_Age_Gender <- GP_reg_data %>%
+  mutate(
+    Age_group = case_when(
+      Age < 10 ~ "0-9",
+      Age < 20 ~ "10-19",
+      Age < 30 ~ "20-29",
+      Age < 40 ~ "30-39",
+      Age < 50 ~ "40-49",
+      Age < 60 ~ "50-59",
+      Age < 70 ~ "60-69",
+      Age < 80 ~ "70-79",
+      Age < 90 ~ "80-89",
+      TRUE ~ "90+",
+    )
+  ) %>%
+  group_by(
+    GP_Code, GP_Name, PCN, Locality, Age_group, Gender
+  ) %>%
+  summarise(
+    N = sum(BSOL_Registrants, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    N = round(N / 5) * 5
+  )
+
+GP_IMD <- GP_reg_data %>%
+  group_by(
+    GP_Code, GP_Name, PCN, Locality, IMD_Quintile
+  ) %>%
+  summarise(
+    N = sum(BSOL_Registrants, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    N = round(N / 5) * 5,
+    IMD_Quintile = case_when(
+      is.null(IMD_Quintile) ~ "Unknown",
+      TRUE ~ as.character(IMD_Quintile)
+    )
+  )
+
+
+# Make data available to ojs
+ojs_define(GP_eths = GP_eths)
+ojs_define(GP_Age_Gender = GP_Age_Gender)
+ojs_define(GP_IMD = GP_IMD)
+```
+
+## GP Patient Demographics
+
+For data security, all counts relating to GP registrations are rounded to the nearest 5.
+
+```{ojs}
+
+/* Make data compatible with ojs */
+GP_eths_ojs = aq.from(transpose(GP_eths))
+GP_Age_Gender_ojs = aq.from(transpose(GP_Age_Gender))
+GP_IMD_ojs = aq.from(transpose(GP_IMD))
+
+// Extract unique Practice Names from the table
+Practice_Names = GP_eths_ojs.array("GP_Name").filter((v, i, a) => a.indexOf(v) === i).sort()
+
+/* Get input from user */
+viewof variable = Inputs.select(Practice_Names, {label: "Choose a Practice"})
+
+/*  Filter based on selected variable */
+GP_eths_filtered = GP_eths_ojs.params({ variable }).filter((d) => d.GP_Name === variable)
+GP_Age_Gender_filtered = GP_Age_Gender_ojs.params({ variable }).filter((d) => d.GP_Name === variable)
+GP_IMD_filtered = GP_IMD_ojs.params({ variable }).filter((d) => d.GP_Name === variable)
+```
+:::{.columns}
+
+::: {.column width="100%"}
+
+```{ojs eth_plot}
+Plot.plot({
+  width: 800, 
+  height: 300, 
+  marginLeft: 80,
+  marginBottom: 120,
+  /* Set axis labels */
+  x: { 
+      label: "Ethnicity",
+      tickRotate: -45
+      },
+  y: { label: "Number of patients" },
+  marks: [
+    Plot.barY(GP_eths_filtered, {
+      y: "N",
+      x: "Ethnicity",
+      fill: "#7570b3"
+    })
+  ]
+})
+```
+
+:::
+
+::: {.column width="40%"}
+
+```{ojs IMD_plot}
+Plot.plot({
+  width: 320, 
+  height: 240, 
+  marginLeft: 80,
+  marginTop: 60,
+  /* Set axis labels */
+  x: { 
+    label: "IMD Quintile",
+    type: "band", // explicitly treat x as categorical
+    domain: ["1", "2", "3", "4", "5", "Unknown"]
+    },
+  y: { label: "Number of patients" },
+  marks: [
+    Plot.barY(GP_IMD_filtered, {
+      y: "N",
+      x: "IMD_Quintile",
+      fill: "#7570b3"
+    })
+  ]
+})
+```
+
+:::
+
+::: {.column width="60%"}
+
+```{ojs gender_age_plot}
+Plot.plot({
+  width: 480, 
+  height: 200, 
+  marginLeft: 40,
+  x: { 
+    label: "Age Group",
+    // type: "band", 
+    domain: ["0-9", "10-19", "20-29", "30-39", "40-49", "50-59", "60-69", "70-79", "80-89", "90+"] 
+  },
+  y: { label: "Number of patients" },
+  color: {
+    legend: true,
+    scheme: "Dark2"
+  },
+  marks: [
+    Plot.barY(GP_Age_Gender_filtered, {
+      x: "Age_group",
+      y: "N",
+      fill: "Gender"
+      }),
+  ]
+})
+
+```
+
+:::
+
+:::

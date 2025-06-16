@@ -43,6 +43,14 @@ ward_data <- convert_GP_data(
   to = "Ward"
 )
 
+ward_shape <- Ward
+ward_shape@data <- ward_shape@data %>%
+  mutate(
+    Ward = stringr::str_wrap(Ward, width = 15)
+  )
+ward_shape <- subset(ward_shape, ward_shape@data$Area == "Birmingham")
+
+# Plot smoking QOF prevalence
 map <- plot_map(
   ward_data,
   value_header = "Count per 100 Denominator",
@@ -50,16 +58,54 @@ map <- plot_map(
   map_type = "Ward",
   map_title = "Smoking QOF Prevalence (2023/24)",
   style = "cont"
-)
+) +
+  tm_shape(ward_shape) +
+  tm_text(text = "Ward", size = 0.25,
+          xmod=c(0,0,0,0,0.1,                                                          # ie adjust text labels horizontally
+                 0,0,-0.1,0.3,-0.4,                         
+                 -0.09,0,0.3,-0.2,0,
+                 0,0,0.2,0.3,0.1,                               
+                 -1.0,0,-0.2,0,0,
+                 0,0,-0.2,0,0,                             
+                 0,-0.2,0.6,0,0.2,
+                 0.1,0,-0.2,0,0.2,                                                
+                 -0.3,0,0.3,0,0,
+                 -0.2,0.15,0,0,0.2,                       
+                 0,-0.1,-0.2,0,0,
+                 0,0,-0.1,-0.2,0,                                              
+                 0,-0.2,-0.2,0,-0.2,
+                 0,-0.2,0.1,0),                                 
+          ymod=c(0,-0.2,0,0,-0.1,                                                        # ie adjust text labels vertically
+                 0,0,-0.2,0.3,-0.1,                         
+                 0,0,-0.1,0.1,0,
+                 0.1,0,0,0,-0.1,                            
+                 0.3,-0.1,0,0,-0.2,
+                 0,0,0.1,0,0,                               
+                 0.2,-0.1,0.3,0,0.15,
+                 0,0.1,0,0,0.3,                                                                     
+                 -0.4,0,-0.3,0,-0.2,
+                 0,0,0.1,0,0.2,                       
+                 0,0.2,0,0,0.1,
+                 0,0,0.3,0,0,                                              
+                 0,0,0,0,0,
+                 -0.1,0,0,0)
+  ) 
 
-
-map <- add_points(
+# Add service points
+map1 <- add_points(
   map, 
   smoking_services,
-  color = "Organisation.Type",
+  color = "Organisation Type",
   size = 0.3
 )
-map
 
-save_map(map, "output/smoking_prev_map.png")
-save_map(map, "output/smoking_prev_map.html")
+save_map(map1, "output/smoking_prev_map.png")
+
+# Add service points
+map2 <- add_points(
+  map, 
+  smoking_services,
+  color = "Organisation Type",
+  size = 0.7
+)
+save_map(map2, "output/smoking_prev_map.html")
