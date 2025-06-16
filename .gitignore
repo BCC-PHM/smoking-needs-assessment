@@ -26,3 +26,9 @@
 *.ppt
 *.pptx
 *.svg
+
+# Exclude config and temp files
+*config*
+*delete*
+*tmp*
+*temp*
