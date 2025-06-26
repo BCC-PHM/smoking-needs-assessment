@@ -272,7 +272,7 @@ get_pharm_age_sex <- function(
 # Load smoking cessation services data
 pharmacies <- read_excel("data/List of providers and postcodes.xlsx") %>%
   filter(
-    `Organisation Type` == "Pharmacy"
+    `Organisation Type` %in%  c("Pharmacy", "Buisness")
   ) %>%
   left_join(
     brum_postcodes,
