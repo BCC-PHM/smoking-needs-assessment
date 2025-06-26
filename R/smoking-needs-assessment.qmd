@@ -112,6 +112,14 @@ ojs_define(pharm_IMD = pharm_IMD)
 ojs_define(pharm_Age_Gender = pharm_Age_Gender)
 ```
 
+## Smoking Cessation Services
+
+The map below shows the smoking QOF prevalence (2023/24) and the location of BCC commissioned smoking cessation services.
+
+```{=html}
+<iframe width="100%" height="700" src="https://bcc-phm.github.io/reports/smoking_prev_map.html" title=""></iframe>
+```
+
 ## GP Patient Demographics
 
 For data security, all counts relating to GP registrations are rounded to the nearest 5.
@@ -225,7 +233,7 @@ Plot.plot({
 
 ## Pharmacy Customer Demographics
 
-The demographics of pharmacy customers are estimated based on those living within 1km of the pharmacy using the 2021 ONS census.
+The demographics of pharmacy customers are estimated based on those living within 1km of the pharmacy using the 2021 ONS census. Only Birmingham residents are included in the analysis.
 
 
 ```{ojs pharm_prep}

@@ -34,6 +34,8 @@ GP_data <- fingertips_data(
     by= join_by("Practice_Code")
   )
 
+writexl::write_xlsx(GP_data, "data/smoking-QOF.xlsx")
+
 # Convert to ward-level estimate
 ward_data <- convert_GP_data(
   data = GP_data,
