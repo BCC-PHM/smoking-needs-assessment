@@ -329,8 +329,9 @@ for (code_i in pharmacies$NHS_Code) {
 
 # Combine ethnicity data
 pharmacy_eths <- data.table::rbindlist(pharmacy_eth_list) %>%
+  mutate(Name_Code = paste(Name, "-", NHS_Code)) %>%
   select(
-    c(Name, NHS_Code, Ethnic_Group, Est_Num)
+    c(Name, NHS_Code, Name_Code, Ethnic_Group, Est_Num)
   ) %>%
   mutate(
     Est_Num = round(Est_Num)
@@ -338,8 +339,12 @@ pharmacy_eths <- data.table::rbindlist(pharmacy_eth_list) %>%
 
 # Combine IMD data
 pharmacy_imds <- data.table::rbindlist(pharmacy_IMD_list) %>%
+  mutate(
+    Name_Code = paste(Name, "-", NHS_Code),
+    IMD_quintile = as.character(IMD_quintile)
+    ) %>%
   select(
-    c(Name, NHS_Code, IMD_quintile, Est_Num)
+    c(Name, NHS_Code, Name_Code, IMD_quintile, Est_Num)
   ) %>%
   mutate(
     Est_Num = round(Est_Num)
@@ -347,8 +352,9 @@ pharmacy_imds <- data.table::rbindlist(pharmacy_IMD_list) %>%
 
 # Combine Age & Sex data
 pharmacy_age_sex <- data.table::rbindlist(pharmacy_age_Sex_list) %>%
+  mutate(Name_Code = paste(Name, "-", NHS_Code)) %>%
   select(
-    c(Name, NHS_Code, Sex, Age_group, Est_Num)
+    c(Name, NHS_Code, Name_Code, Sex, Age_group, Est_Num)
   ) %>%
   mutate(
     Est_Num = round(Est_Num)
