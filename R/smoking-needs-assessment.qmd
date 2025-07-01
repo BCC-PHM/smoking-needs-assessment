@@ -231,8 +231,7 @@ Plot.plot({
 :::
 
 
-
-## Pharmacy/Buisness Customer Demographics
+## Pharmacy/Business Customer Demographics
 
 The demographics of pharmacy customers are estimated based on those living within 1km of the pharmacy using the 2021 ONS census. Only Birmingham residents are included in the analysis.
 
