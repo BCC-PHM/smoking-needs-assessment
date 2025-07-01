@@ -113,6 +113,68 @@ ojs_define(pharm_IMD = pharm_IMD)
 ojs_define(pharm_Age_Gender = pharm_Age_Gender)
 ```
 
+## Trend over Time
+
+There are two primary sources of smoking prevalence data: Quality and Outcomes Framework (QOF) extracted from GP data systems, and the Annual Population Survey (APS). 
+
+According to FingerTips regarding QOF: "The percentage of patients who do not have their smoking status recorded varies from 40% to less than 1%, but the characteristics of these patients are not known. Recording of smoking status has been shown to vary between groups; women, older people and those with chronic conditions were more likely to have their smoking status recorded." However, a study by [Honeyford K, et al](https://pubmed.ncbi.nlm.nih.gov/25031192/) "found that the proportion of patients recorded as smokers... is a good estimate of the actual smoking prevalence of the practice."
+
+The APS prevalence, however, is based on a sample of the population of Birmingham. In 2023, 840 people participated in the survey. This is 0.1% of the 857,455 people aged 18+ in the 2021 census. As can be seen in the figure below, this small denominator means there is large uncertainty on the prevalence value. As a result, the increase in prevalence seen in 2023 is not statistically significant.
+
+
+```{r trend}
+library(ggplot2)
+library(plotly)
+
+qof <- read.csv("../data/smoking-qof-birmingham.csv") %>%
+  mutate(
+    Source = "QOF (15+)"
+  ) 
+aps <- read.csv("../data/aps-yearly-birmingham.csv") %>%
+  mutate(
+    Source = "APS (18+)"
+  )
+prev_data <- rbind(qof, aps) %>%
+  filter(
+    AreaName == "Birmingham",
+    !is.na(Value)
+  ) %>%
+  mutate(
+    Year = Time.period.Sortable/10000,
+    Value = round(Value, 2)
+  )
+
+plt <- ggplot(prev_data, 
+              aes(x = Year, 
+                  y = Value, 
+                  color = Source
+                  ),
+              text = paste0(
+                    "Source: ", Source,
+                    "\nYear: ", Time.period,
+                    "\nValue: ", round(Value,2), "%"
+                    )
+              ) +
+  geom_line() +
+  geom_point() +
+  geom_errorbar(
+    aes(ymin = Lower.CI.95.0.limit, ymax = Upper.CI.95.0.limit),
+    width = 0.4
+    ) +
+  theme_bw() +
+  labs(
+    y = "Smoking Prevalence (%)",
+    x = ""
+  ) +
+  scale_x_continuous(
+    breaks = c(2010, 2015, 2020, 2025),
+    labels = c(2010, 2015, 2020, 2025),
+    limits = c(2010, 2025)
+  )
+
+ggplotly(plt)
+```
+
 ## Smoking Cessation Services
 
 The map below shows the smoking QOF prevalence (2023/24) and the location of BCC commissioned smoking cessation services.
